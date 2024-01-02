@@ -1,0 +1,158 @@
+-- import database as salesdatawalmart
+
+select * from salesdatawalmart.sale;
+
+
+-- ----------------------------------------------------------------------------------------------------------
+-- Feature Engineering--
+-- time of day
+select
+    time,
+    (case
+        when 'time' between '00:00:00' and '12:00:00' then 'Morning'
+        when 'time' between '12:01:00' and '16:00:00' then 'Afternoon'
+        else 'Evening'
+      end
+      ) as time_of_date
+ from sale;   
+ 
+ alter table sale add column time_of_day varchar(20);
+ 
+ update sale
+ set time_of_day=(case
+        when 'time' between '00:00:00' and '12:00:00' then 'Morning'
+        when 'time' between '12:01:00' and '16:00:00' then 'Afternoon'
+        else 'Evening'
+      end
+      );
+select * from salesdatawalmart.sale;
+
+-- day_name
+
+select 
+   date,
+   dayname(date)
+from sale;
+
+alter table sale add column dayname varchar(10);
+update sale 
+set dayname =dayname(date);
+
+-- month name
+alter table sale add column month_name varchar(10);
+update sale
+set month_name=monthname(date);
+select * from salesdatawalmart.sale;
+
+-- ---------------------------------------------------------------------------------------------------------
+
+-- EDA
+select distinct city
+from sale;
+
+select distinct city, branch
+from sale;
+
+select distinct product_line
+from sale;
+
+-- common payment method
+select payment_method, count(payment_method) as cnt
+from sale
+group by payment_method
+order by cnt desc;
+
+-- most selling product line
+
+select product_line,
+count(product_line) as cnt_pro
+from sale
+group by 1
+order by cnt_pro desc;
+
+-- total revenue by month
+
+select * from salesdatawalmart.sale;
+
+select month_name as month,
+sum(total) as total_revenue 
+from sale
+group by month_name
+order by 2 desc;
+
+select month_name,
+sum(cogs) as cogs
+from sale
+group by 1
+order by 2 desc;
+
+-- product line with larget revenue
+
+select product_line,
+sum(total) as total_revenue
+from sale
+group by 1
+order by 2 desc;
+
+-- city with largest revenue
+select city,
+branch,
+sum(total) as total_revenue
+from sale
+group by 1,2
+order by 3 desc;
+
+-- product line with largest vat
+
+select * from salesdatawalmart.sale;
+select product_line,
+avg(VAT)
+from sale
+group by 1
+order by 2 desc;
+
+-- branch sold more products than average product sold
+select branch,
+sum(quantity)
+from sale
+group by branch
+having sum(quantity)> (select avg(quantity) from sale);
+-- ------------------------------------------------------------------------------------------------------
+-- day of week with best avg rating
+select dayname,
+avg(rating)
+from sale
+group by 1
+order by 2 desc;
+
+-- number of sales made in each time of the day per weekday
+select time_of_day,
+count(*) as total_sales
+from sale
+where dayname= 'Monday'
+group by 1
+order by 2 desc;
+
+-- customer type bring most revenue
+select customer_type,
+sum(total) as total_revenue
+from sale
+group by 1
+order by 2 desc;
+
+-- city with larget tax percent/VAT 
+select 
+  city,
+  avg(VAT)
+from sale 
+group by 1
+order by 2 desc;
+
+-- customer type pays the most vat
+
+select 
+  customer_type,
+  avg(VAT)
+from sale 
+group by 1
+order by 2 desc;
